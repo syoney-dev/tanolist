@@ -103,7 +103,14 @@
       <p id="quizPrompt" class="prompt"></p>
     </div>
     <div id="quizOptions" class="options"></div>
-    <button id="quitQuizBtn" class="text-btn quit-btn">中断してメニューへ</button>
+    <div class="quiz-foot">
+      <button id="quitQuizBtn" class="text-btn quit-btn">中断してメニューへ</button>
+      <label class="switch">
+        <span class="switch-label">音声</span>
+        <input type="checkbox" id="quizSpeechOn" role="switch">
+        <span class="switch-track" aria-hidden="true"></span>
+      </label>
+    </div>
   </section>
 
   <!-- 結果 -->

@@ -339,6 +339,8 @@ function startQuiz(mode) {
   quiz = { mode, questions, index: 0, correct: 0, wrong: 0, missed: [], token: ++quizToken };
   $("modeTitleDir").textContent = DIRECTION_LABELS[direction];
   $("modeTitleMode").textContent = MODE_LABELS[mode];
+  $("quizSpeechOn").checked = settings.speech;
+  $("quizSpeechOn").closest(".switch").hidden = !canSpeak;
   show("Quiz");
   renderQuestion();
 }
@@ -519,6 +521,13 @@ $("feedbackSec").addEventListener("input", (e) => {
 $("speechOn").addEventListener("change", (e) => {
   settings.speech = e.target.checked;
   saveJson(SETTINGS_KEY, settings);
+});
+
+// 出題画面の音声スイッチ。設定画面の「読み上げる」と同じ設定を切り替える
+$("quizSpeechOn").addEventListener("change", (e) => {
+  settings.speech = e.target.checked;
+  saveJson(SETTINGS_KEY, settings);
+  if (!settings.speech) stopSpeaking(); // 読み上げ中ならその場で止める
 });
 
 $("speechRate").addEventListener("input", (e) => {
