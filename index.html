@@ -77,11 +77,11 @@
     <nav class="menu">
       <button class="menu-btn" data-mode="order">
         <span class="menu-label">順番に出題</span>
-        <span class="menu-sub">リストの上から順に</span>
+        <span id="orderProgress" class="menu-sub"></span>
       </button>
       <button class="menu-btn" data-mode="random">
         <span class="menu-label">ランダムに出題</span>
-        <span class="menu-sub">全単語をシャッフルして</span>
+        <span id="randomProgress" class="menu-sub"></span>
       </button>
       <button class="menu-btn" data-mode="wrong">
         <span class="menu-label">間違いのみ出題</span>
@@ -126,6 +126,13 @@
         <span id="resultWrong" class="score-num">0</span>
       </div>
     </div>
+    <div id="cycleBox" class="cycle" hidden>
+      <div class="cycle-head">
+        <span id="cycleLabel" class="cycle-label"></span>
+        <span id="cycleCount" class="cycle-count"></span>
+      </div>
+      <div class="cycle-bar"><div id="cycleFill" class="cycle-fill"></div></div>
+    </div>
     <div id="resultMissedWrap" hidden>
       <h3 class="sub-title">間違えた単語</h3>
       <ul id="resultMissed" class="missed-list"></ul>
@@ -139,6 +146,15 @@
   <!-- 設定 -->
   <section id="screenSettings" class="screen" hidden>
     <h2 class="screen-title">設定</h2>
+    <div class="field">
+      <span class="field-label">1回の出題数（順番・ランダム）</span>
+      <div id="sessionSize" class="segmented">
+        <button type="button" data-size="10">10問</button>
+        <button type="button" data-size="20">20問</button>
+        <button type="button" data-size="50">50問</button>
+        <button type="button" data-size="0">全部</button>
+      </div>
+    </div>
     <label class="field">
       <span class="field-label">○×マークの表示秒数：<strong id="feedbackSecLabel"></strong> 秒</span>
       <input type="range" id="feedbackSec" min="0.3" max="3" step="0.1">
@@ -158,6 +174,10 @@
     <div class="field">
       <span class="field-label">不正解カウンタ・正解カウンタ（使用中のリスト）</span>
       <button id="resetCountersBtn" class="ghost-btn danger">リセットする</button>
+    </div>
+    <div class="field">
+      <span class="field-label">出題の進み具合（使用中のリスト）</span>
+      <button id="resetProgressBtn" class="ghost-btn danger">1巡目の最初に戻す</button>
     </div>
   </section>
 

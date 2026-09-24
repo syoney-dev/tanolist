@@ -393,6 +393,26 @@ button { font-family: inherit; }
 .score-label { font-size: 13px; color: var(--paper-dim); }
 .score-num { font-family: var(--serif); font-size: 42px; font-weight: 600; }
 
+.cycle {
+  margin-top: 14px;
+  background: var(--ink-800);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+.cycle-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+.cycle-label { font-size: 15px; font-weight: 600; }
+.cycle-count { font-family: var(--mono); font-size: 13px; color: var(--paper-dim); }
+.cycle-bar { height: 8px; border-radius: 999px; background: var(--ink-600); overflow: hidden; }
+.cycle-fill { height: 100%; background: var(--gold); border-radius: 999px; transition: width 0.4s ease; }
+.cycle.completed { border-color: var(--gold); }
+.cycle.completed .cycle-label { color: var(--gold); }
+
 .missed-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
 .missed-list li {
   display: flex;
@@ -418,3 +438,23 @@ button { font-family: inherit; }
 .checkbox-field input { width: 20px; height: 20px; accent-color: var(--gold); margin: 0; }
 .checkbox-field .field-label { color: var(--paper); font-size: 15px; }
 .field-note { margin: 0; font-size: 13px; color: var(--red); }
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.segmented button {
+  background: var(--ink-800);
+  color: var(--paper-dim);
+  border: none;
+  border-left: 1px solid var(--rule);
+  padding: 11px 0;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.segmented button:first-child { border-left: none; }
+.segmented button.active { background: var(--gold); color: var(--ink-900); }

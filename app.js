@@ -2,11 +2,12 @@
 
 // ---------- Storage ----------
 // 単語リストの中身は GitHub 上の lists/*.md が正。
-// 端末ごとの状態(選択中のリスト・不正解/正解カウンタ・設定)だけを localStorage に持つ。
+// 端末ごとの状態(選択中のリスト・不正解/正解カウンタ・周回の進み具合・設定)だけを localStorage に持つ。
 
 const SELECTED_KEY = "tanolist-selected-v1";
 const COUNTERS_KEY = "tanolist-counters-v1";
 const MEDALS_KEY = "tanolist-medals-v1";
+const PROGRESS_KEY = "tanolist-progress-v1";
 const SETTINGS_KEY = "tanolist-settings-v1";
 
 const LISTS_DIR = "lists";
@@ -28,8 +29,15 @@ function saveJson(key, value) {
   }
 }
 
-/** @type {{feedbackSec: number, speech: boolean, speechRate: number}} */
-const settings = { feedbackSec: 1.0, speech: true, speechRate: 0.9, ...loadJson(SETTINGS_KEY, {}) };
+/** sessionSize: 順番・ランダム出題の 1 回あたりの問題数。0 は全部 */
+/** @type {{feedbackSec: number, speech: boolean, speechRate: number, sessionSize: number}} */
+const settings = {
+  feedbackSec: 1.0,
+  speech: true,
+  speechRate: 0.9,
+  sessionSize: 20,
+  ...loadJson(SETTINGS_KEY, {}),
+};
 
 /** 不正解カウンタ: { [ファイル名]: { [単語\t対訳]: 回数 } } */
 const counters = loadJson(COUNTERS_KEY, {});
@@ -71,6 +79,28 @@ function recordAnswer(file, pair, isCorrect) {
     if (medal > 0) setCount(medals, MEDALS_KEY, file, pair, medal - 1);
     else setCount(counters, COUNTERS_KEY, file, pair, wrong + 1);
   }
+}
+
+// ---------- Cycle progress ----------
+// 順番・ランダム出題は、1 回ぶん(sessionSize 問)ずつ出しながら、リスト全体を 1 巡するまでの進み具合を覚えておく。
+// リスト × 出題の向き × モードごとに別々に数える。
+
+/** { [ファイル名]: { ["word/order" など]: { cycle: 何巡目, done: [この周回で出題済みの 単語\t対訳] } } } */
+const progress = loadJson(PROGRESS_KEY, {});
+
+function getProgress(file, dir, mode) {
+  const byFile = (progress[file] ??= {});
+  return (byFile[`${dir}/${mode}`] ??= { cycle: 1, done: [] });
+}
+
+function saveProgress() {
+  saveJson(PROGRESS_KEY, progress);
+}
+
+/** この周回でまだ出題していないペア(リストの並び順のまま) */
+function remainingPairs(pairs, prog) {
+  const done = new Set(prog.done);
+  return pairs.filter((p) => !done.has(pairKey(p)));
 }
 
 // ---------- Word list files ----------
@@ -322,6 +352,12 @@ const MODE_LABELS = { order: "順番に出題", random: "ランダムに出題",
 function openModes(dir) {
   direction = dir;
   $("modesTitle").textContent = DIRECTION_LABELS[dir];
+  const total = currentList.pairs.length;
+  for (const [mode, desc] of [["order", "上から順に"], ["random", "シャッフルして"]]) {
+    const prog = getProgress(currentList.file, dir, mode);
+    const doneCount = total - remainingPairs(currentList.pairs, prog).length;
+    $(`${mode}Progress`).textContent = `${desc} ・ ${prog.cycle}巡目 ${doneCount} / ${total} 語`;
+  }
   const n = wrongPairs().length;
   $("wrongCount").textContent = n ? `不正解カウンタ 1 以上の ${n} 語` : "間違えた単語はまだありません";
   document.querySelector('[data-mode="wrong"]').disabled = n === 0;
@@ -329,14 +365,27 @@ function openModes(dir) {
 }
 
 function startQuiz(mode) {
-  const pairs = currentList.pairs;
   let questions;
-  if (mode === "random") questions = shuffle(pairs);
-  else if (mode === "wrong") questions = wrongPairs();
-  else questions = pairs.slice();
+  let prog = null;
+  if (mode === "wrong") {
+    questions = wrongPairs();
+  } else {
+    prog = getProgress(currentList.file, direction, mode);
+    let rest = remainingPairs(currentList.pairs, prog);
+    if (!rest.length) {
+      // リストの単語が減ったなどで残りが無くなっていたら、次の周回を始める
+      prog.cycle++;
+      prog.done = [];
+      saveProgress();
+      rest = currentList.pairs.slice();
+    }
+    if (mode === "random") rest = shuffle(rest);
+    // 周回の残りが 1 回ぶんより少なければ残りだけ出して、周回をまたがない
+    questions = rest.slice(0, settings.sessionSize || rest.length);
+  }
   if (!questions.length) return;
 
-  quiz = { mode, questions, index: 0, correct: 0, wrong: 0, missed: [], token: ++quizToken };
+  quiz = { mode, questions, prog, index: 0, correct: 0, wrong: 0, missed: [], token: ++quizToken };
   $("modeTitleDir").textContent = DIRECTION_LABELS[direction];
   $("modeTitleMode").textContent = MODE_LABELS[mode];
   $("quizSpeechOn").checked = settings.speech;
@@ -404,6 +453,12 @@ function answerQuestion(clicked, isCorrect) {
   updateCounterLabel(pair);
   showMark(isCorrect);
 
+  // 回答した時点で出題済みにするので、途中で中断してもここまでは進んだことになる
+  if (quiz.prog && !quiz.prog.done.includes(pairKey(pair))) {
+    quiz.prog.done.push(pairKey(pair));
+    saveProgress();
+  }
+
   // 読み上げは出題の向きに関係なく常に単語側。○×を出し終えて、かつ読み終えてから次へ進む
   const token = quiz.token;
   const spoken = speakWord(pair);
@@ -443,7 +498,31 @@ function showResult() {
     ul.append(li);
   }
   $("resultMissedWrap").hidden = quiz.missed.length === 0;
+  renderCycle();
   show("Result");
+}
+
+/** 結果画面の周回表示。周回を出し切っていたら完了を表示して次の周回へ進める */
+function renderCycle() {
+  const prog = quiz.prog;
+  $("cycleBox").hidden = !prog;
+  $("retryBtn").textContent = "もう一度";
+  if (!prog) return;
+
+  const total = currentList.pairs.length;
+  const doneCount = total - remainingPairs(currentList.pairs, prog).length;
+  const completed = doneCount >= total;
+  $("cycleLabel").textContent = completed ? `${prog.cycle}巡目 完了！` : `${prog.cycle}巡目`;
+  $("cycleCount").textContent = `${doneCount} / ${total} 語`;
+  $("cycleFill").style.width = `${total ? (doneCount / total) * 100 : 0}%`;
+  $("cycleBox").classList.toggle("completed", completed);
+  $("retryBtn").textContent = completed ? "次の周回へ" : "続けて出題";
+
+  if (completed) {
+    prog.cycle++;
+    prog.done = [];
+    saveProgress();
+  }
 }
 
 function quitQuiz() {
@@ -465,7 +544,15 @@ function openSettings() {
   for (const id of ["speechOn", "speechRate", "speechTestBtn"]) $(id).disabled = !canSpeak;
   $("speechTestBtn").disabled = !canSpeak || !currentList?.pairs.length;
   $("resetCountersBtn").disabled = !currentList;
+  $("resetProgressBtn").disabled = !currentList;
+  renderSessionSize();
   show("Settings");
+}
+
+function renderSessionSize() {
+  for (const btn of $("sessionSize").children) {
+    btn.classList.toggle("active", Number(btn.dataset.size) === settings.sessionSize);
+  }
 }
 
 function renderSpeechNote() {
@@ -553,6 +640,22 @@ $("resetCountersBtn").addEventListener("click", () => {
   delete medals[currentList.file];
   saveJson(COUNTERS_KEY, counters);
   saveJson(MEDALS_KEY, medals);
+  renderMenu();
+});
+
+for (const btn of $("sessionSize").children) {
+  btn.addEventListener("click", () => {
+    settings.sessionSize = Number(btn.dataset.size);
+    saveJson(SETTINGS_KEY, settings);
+    renderSessionSize();
+  });
+}
+
+$("resetProgressBtn").addEventListener("click", () => {
+  if (!currentList) return;
+  if (!confirm(`「${currentList.name}」の出題の進み具合を 1 巡目の最初に戻しますか？`)) return;
+  delete progress[currentList.file];
+  saveProgress();
   renderMenu();
 });
 
