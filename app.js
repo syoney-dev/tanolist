@@ -416,6 +416,7 @@ function renderQuestion() {
 
   const box = $("quizOptions");
   box.innerHTML = "";
+  box.classList.remove("answered");
   for (const text of options) {
     const btn = document.createElement("button");
     btn.className = "option";
@@ -437,6 +438,7 @@ function updateCounterLabel(pair) {
 function answerQuestion(clicked, isCorrect) {
   const pair = quiz.questions[quiz.index];
   const answer = answerOf(pair);
+  $("quizOptions").classList.add("answered");
   for (const btn of $("quizOptions").children) {
     btn.disabled = true;
     if (btn.textContent === answer) btn.classList.add("correct");

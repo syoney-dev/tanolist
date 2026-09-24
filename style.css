@@ -302,8 +302,21 @@ button { font-family: inherit; }
 }
 .option:active { transform: scale(0.98); }
 .option:disabled { cursor: default; }
-.option.correct { background: rgba(95, 191, 122, 0.22); border-color: var(--green); }
+/* 回答後: 正解の選択肢は塗りつぶして ○×オーバーレイより手前に出し、間違えても正解が一目で分かるようにする */
+.option.correct {
+  position: relative;
+  z-index: 51;
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--ink-900);
+  font-weight: 700;
+  box-shadow: 0 0 0 3px rgba(95, 191, 122, 0.35);
+}
+.option.correct::before { content: "✓ "; }
 .option.wrong { background: rgba(224, 89, 74, 0.22); border-color: var(--red); }
+.option.wrong::before { content: "✗ "; color: var(--red); }
+/* 正解でも選んだ選択肢でもないものは薄くする */
+.options.answered .option:not(.correct):not(.wrong) { opacity: 0.4; }
 
 /* 中断ボタンは中央のまま、音声スイッチをその右に右寄せで置く */
 .quiz-foot {
