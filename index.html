@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Tanolist</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14231F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tanolist">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Sans+JP:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="app">
+
+  <header class="topbar">
+    <h1 class="brand"><span class="brand-mark">Tano</span><span class="brand-rest">list</span></h1>
+    <div id="modeTitle" class="mode-title" hidden>
+      <span id="modeTitleDir" class="mode-title-dir"></span>
+      <span id="modeTitleMode" class="mode-title-mode"></span>
+    </div>
+    <button id="homeBtn" class="text-btn" hidden>メニュー</button>
+  </header>
+
+  <!-- メインメニュー -->
+  <section id="screenMenu" class="screen">
+    <div class="current-list">
+      <span class="eyebrow">使用中の単語リスト</span>
+      <p id="currentListName" class="current-list-name">未選択</p>
+      <p id="currentListMeta" class="current-list-meta"></p>
+    </div>
+
+    <p id="statusMsg" class="status-msg" hidden></p>
+
+    <nav class="menu">
+      <button class="menu-btn" data-go="select">
+        <span class="menu-num">01</span>
+        <span class="menu-label">単語リストを選択</span>
+      </button>
+      <button class="menu-btn needs-list" data-go="modes" data-dir="word">
+        <span class="menu-num">02</span>
+        <span class="menu-label">出題（覚える単語側）</span>
+        <span class="menu-sub">単語を見て、日本語を選ぶ</span>
+      </button>
+      <button class="menu-btn needs-list" data-go="modes" data-dir="meaning">
+        <span class="menu-num">03</span>
+        <span class="menu-label">出題（日本語側）</span>
+        <span class="menu-sub">日本語を見て、単語を選ぶ</span>
+      </button>
+      <button class="menu-btn minor" data-go="settings">
+        <span class="menu-num">⚙</span>
+        <span class="menu-label">設定</span>
+      </button>
+    </nav>
+  </section>
+
+  <!-- 単語リスト選択 -->
+  <section id="screenSelect" class="screen" hidden>
+    <h2 class="screen-title">単語リストを選択</h2>
+    <p id="selectStatus" class="status-msg" hidden></p>
+    <ul id="listChoices" class="choices-list"></ul>
+  </section>
+
+  <!-- 出題モード選択 -->
+  <section id="screenModes" class="screen" hidden>
+    <h2 id="modesTitle" class="screen-title">出題</h2>
+    <nav class="menu">
+      <button class="menu-btn" data-mode="order">
+        <span class="menu-label">順番に出題</span>
+        <span class="menu-sub">リストの上から順に</span>
+      </button>
+      <button class="menu-btn" data-mode="random">
+        <span class="menu-label">ランダムに出題</span>
+        <span class="menu-sub">全単語をシャッフルして</span>
+      </button>
+      <button class="menu-btn" data-mode="wrong">
+        <span class="menu-label">間違いのみ出題</span>
+        <span id="wrongCount" class="menu-sub"></span>
+      </button>
+    </nav>
+  </section>
+
+  <!-- クイズ -->
+  <section id="screenQuiz" class="screen quiz" hidden>
+    <div class="quiz-head">
+      <span id="quizProgress" class="quiz-progress"></span>
+      <span class="quiz-stats">
+        <span id="quizMedals" class="quiz-medals"></span>
+        <span id="quizCounter" class="quiz-counter"></span>
+      </span>
+    </div>
+    <div class="prompt-card">
+      <p id="quizPrompt" class="prompt"></p>
+    </div>
+    <div id="quizOptions" class="options"></div>
+    <button id="quitQuizBtn" class="text-btn quit-btn">中断してメニューへ</button>
+  </section>
+
+  <!-- 結果 -->
+  <section id="screenResult" class="screen" hidden>
+    <h2 class="screen-title">結果</h2>
+    <div class="score">
+      <div class="score-box ok">
+        <span class="score-label">正解</span>
+        <span id="resultCorrect" class="score-num">0</span>
+      </div>
+      <div class="score-box ng">
+        <span class="score-label">不正解</span>
+        <span id="resultWrong" class="score-num">0</span>
+      </div>
+    </div>
+    <div id="resultMissedWrap" hidden>
+      <h3 class="sub-title">間違えた単語</h3>
+      <ul id="resultMissed" class="missed-list"></ul>
+    </div>
+    <div class="result-actions">
+      <button id="retryBtn" class="primary-btn">もう一度</button>
+      <button id="backMenuBtn" class="ghost-btn">メニューへ</button>
+    </div>
+  </section>
+
+  <!-- 設定 -->
+  <section id="screenSettings" class="screen" hidden>
+    <h2 class="screen-title">設定</h2>
+    <label class="field">
+      <span class="field-label">○×マークの表示秒数：<strong id="feedbackSecLabel"></strong> 秒</span>
+      <input type="range" id="feedbackSec" min="0.3" max="3" step="0.1">
+    </label>
+    <label class="field checkbox-field">
+      <input type="checkbox" id="speechOn">
+      <span class="field-label">回答時に単語を読み上げる</span>
+    </label>
+    <label class="field">
+      <span class="field-label">読み上げの速さ：<strong id="speechRateLabel"></strong> 倍</span>
+      <input type="range" id="speechRate" min="0.5" max="1.5" step="0.1">
+    </label>
+    <div class="field">
+      <button id="speechTestBtn" class="ghost-btn">読み上げを試す</button>
+      <p id="speechNote" class="field-note" hidden></p>
+    </div>
+    <div class="field">
+      <span class="field-label">不正解カウンタ・正解カウンタ（使用中のリスト）</span>
+      <button id="resetCountersBtn" class="ghost-btn danger">リセットする</button>
+    </div>
+  </section>
+
+</div>
+
+<!-- ○× オーバーレイ -->
+<div id="markOverlay" class="mark-overlay" hidden>
+  <svg id="markCircle" class="mark ok" viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="36" />
+  </svg>
+  <svg id="markCross" class="mark ng" viewBox="0 0 100 100" aria-hidden="true">
+    <line x1="20" y1="20" x2="80" y2="80" />
+    <line x1="80" y1="20" x2="20" y2="80" />
+  </svg>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

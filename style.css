@@ -1,0 +1,372 @@
+:root {
+  --ink-900: #0F1A17;
+  --ink-800: #14231F;
+  --ink-700: #1C2F29;
+  --ink-600: #253B34;
+  --rule: #34504A;
+
+  --paper: #EEE8D8;
+  --paper-dim: #8FA39C;
+
+  --gold: #D9A441;
+  --green: #5FBF7A;
+  --red: #E0594A;
+
+  --serif: "Fraunces", ui-serif, Georgia, serif;
+  --sans: "IBM Plex Sans JP", -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Apple SD Gothic Neo", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+/* hidden 属性を display 指定より優先させる */
+[hidden] { display: none !important; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--ink-900);
+  color: var(--paper);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+#app {
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 18px 40px;
+}
+
+button { font-family: inherit; }
+
+/* ---------- Header ---------- */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 22px 2px 14px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 18px;
+}
+
+.brand {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: 0.2px;
+}
+.brand-mark { color: var(--gold); font-style: italic; font-weight: 500; }
+.brand-rest { color: var(--paper); }
+
+.mode-title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 1.3;
+}
+.mode-title > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mode-title-dir { font-size: 11px; color: var(--paper-dim); }
+.mode-title-mode { font-size: 14px; font-weight: 600; color: var(--gold); }
+
+/* ---------- Common ---------- */
+
+.screen { flex: 1; display: flex; flex-direction: column; }
+
+.screen-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 22px;
+  margin: 0 0 16px;
+}
+
+.sub-title {
+  font-size: 14px;
+  color: var(--paper-dim);
+  font-weight: 500;
+  margin: 22px 0 8px;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--paper-dim);
+}
+
+.status-msg {
+  background: var(--ink-700);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--paper-dim);
+  margin: 0 0 14px;
+}
+.status-msg.error { color: var(--red); border-color: var(--red); }
+
+.text-btn {
+  background: none;
+  border: none;
+  color: var(--paper-dim);
+  font-size: 14px;
+  padding: 6px 4px;
+  cursor: pointer;
+}
+.text-btn:hover { color: var(--paper); }
+
+.primary-btn, .ghost-btn {
+  border-radius: 12px;
+  padding: 13px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.primary-btn {
+  background: var(--gold);
+  color: var(--ink-900);
+  border: 1px solid var(--gold);
+}
+.ghost-btn {
+  background: var(--ink-700);
+  color: var(--paper);
+  border: 1px solid var(--rule);
+}
+.ghost-btn.danger { color: var(--red); }
+.primary-btn:active, .ghost-btn:active { transform: scale(0.98); }
+
+/* ---------- Menu ---------- */
+
+.current-list {
+  background: var(--ink-800);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+.current-list-name {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 6px 0 2px;
+}
+.current-list-meta {
+  font-size: 13px;
+  color: var(--paper-dim);
+  margin: 0;
+}
+
+.menu { display: flex; flex-direction: column; gap: 10px; }
+
+.menu-btn {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas: "num label" "num sub";
+  align-items: center;
+  column-gap: 14px;
+  text-align: left;
+  background: var(--ink-800);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 16px;
+  color: var(--paper);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.menu-btn:hover { border-color: var(--gold); }
+.menu-btn:active { transform: scale(0.99); background: var(--ink-700); }
+.menu-btn:disabled { opacity: 0.4; cursor: default; border-color: var(--rule); }
+.menu-btn.minor { padding: 12px 16px; }
+
+.menu-num {
+  grid-area: num;
+  font-family: var(--mono);
+  color: var(--gold);
+  font-size: 14px;
+}
+.menu-label { grid-area: label; font-size: 16px; font-weight: 600; }
+.menu-sub { grid-area: sub; font-size: 13px; color: var(--paper-dim); margin-top: 2px; }
+.menu-sub:empty { display: none; }
+
+/* ---------- List select ---------- */
+
+.choices-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+
+.choice {
+  width: 100%;
+  text-align: left;
+  background: var(--ink-800);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: var(--paper);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.choice.active { border-color: var(--gold); }
+.choice-meta { font-size: 12px; color: var(--paper-dim); font-family: var(--mono); white-space: nowrap; }
+
+/* ---------- Quiz ---------- */
+
+.quiz-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--paper-dim);
+  margin-bottom: 10px;
+}
+
+.quiz-counter {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 2px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+}
+.quiz-counter.has-miss { color: var(--red); border-color: var(--red); }
+
+.quiz-stats { display: flex; align-items: center; gap: 8px; }
+/* メダルは最大 3 個分の幅を確保して右寄せにし、個数が変わっても ×:N回 の位置がずれないようにする */
+.quiz-medals {
+  min-width: 3.6em;
+  text-align: right;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+.prompt-card {
+  flex: 1;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ink-800);
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+  padding: 24px 16px;
+  margin-bottom: 18px;
+}
+.prompt {
+  margin: 0;
+  font-size: clamp(30px, 10vw, 48px);
+  font-weight: 600;
+  text-align: center;
+  word-break: break-word;
+}
+
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.option {
+  min-height: 76px;
+  background: var(--ink-700);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  color: var(--paper);
+  font-size: 18px;
+  font-weight: 500;
+  padding: 10px;
+  cursor: pointer;
+  word-break: break-word;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+.option:active { transform: scale(0.98); }
+.option:disabled { cursor: default; }
+.option.correct { background: rgba(95, 191, 122, 0.22); border-color: var(--green); }
+.option.wrong { background: rgba(224, 89, 74, 0.22); border-color: var(--red); }
+
+.quit-btn { margin-top: 14px; align-self: center; }
+
+/* ---------- ○× overlay ---------- */
+
+.mark-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 50;
+  animation: mark-in 0.15s ease-out;
+}
+.mark { width: min(90vw, 90vh); height: min(90vw, 90vh); fill: none; stroke-width: 12; stroke-linecap: round; }
+.mark.ok { stroke: rgba(95, 191, 122, 0.55); }
+.mark.ng { stroke: rgba(224, 89, 74, 0.55); }
+
+@keyframes mark-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ---------- Result ---------- */
+
+.score { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.score-box {
+  background: var(--ink-800);
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.score-box.ok { border-color: var(--green); }
+.score-box.ng { border-color: var(--red); }
+.score-label { font-size: 13px; color: var(--paper-dim); }
+.score-num { font-family: var(--serif); font-size: 42px; font-weight: 600; }
+
+.missed-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.missed-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 15px;
+}
+.missed-list .missed-meaning { color: var(--paper-dim); text-align: right; }
+
+.result-actions { display: flex; gap: 10px; margin-top: 24px; }
+.result-actions > * { flex: 1; }
+
+/* ---------- Settings ---------- */
+
+.field { display: flex; flex-direction: column; gap: 10px; margin-bottom: 26px; }
+.field-label { font-size: 14px; color: var(--paper-dim); }
+.field-label strong { color: var(--paper); font-family: var(--mono); }
+.field input[type="range"] { width: 100%; accent-color: var(--gold); }
+.field .ghost-btn { align-self: flex-start; }
+.checkbox-field { flex-direction: row; align-items: center; gap: 10px; }
+.checkbox-field input { width: 20px; height: 20px; accent-color: var(--gold); margin: 0; }
+.checkbox-field .field-label { color: var(--paper); font-size: 15px; }
+.field-note { margin: 0; font-size: 13px; color: var(--red); }
