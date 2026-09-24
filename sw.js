@@ -1,4 +1,4 @@
-const CACHE_NAME = "tanolist-cache-v11";
+const CACHE_NAME = "tanolist-cache-v12";
 const ASSETS = [
   "./",
   "./index.html",
